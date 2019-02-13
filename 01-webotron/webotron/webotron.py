@@ -24,7 +24,7 @@ bucket_manager = None
 # -----------------click cli group
 @click.group()
 @click.option('--profile', default=None,
-    help="Use a given AWS profile name.")
+            help="Use a given AWS profile name.")
 def cli(profile):
     """Webotron deploys websites to AWS."""
     global session
@@ -33,13 +33,10 @@ def cli(profile):
     if profile:
         session_cfg['profile_name'] = profile
 
-
     session = boto3.Session(**session_cfg)
     bucket_manager = BucketManager(session)
 
 # -------------------List buckets
-
-
 @cli.command('list-buckets')
 def list_buckets():
     """List all s3 buckets."""
@@ -76,6 +73,7 @@ def sync(pathname, bucket):
     """Sync contents of PATHNAME to BUCKET."""
 #    s3_bucket = s3.Bucket(bucket)
     bucket_manager.sync(pathname, bucket)
+    print(bucket_manager.get_bucket_url(bucket_manager.s3.Bucket(bucket)))
 
 
 if __name__ == '__main__':
