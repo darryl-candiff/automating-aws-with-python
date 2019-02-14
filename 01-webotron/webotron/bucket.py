@@ -10,6 +10,7 @@ from hashlib import md5
 import util
 from functools import reduce
 
+
 class BucketManager:
     """Manage an S3 Bucket."""
 
@@ -25,6 +26,10 @@ class BucketManager:
         )
 
         self.manifest = {}
+
+    def get_bucket(self, bucket_name):
+        """Return the passed bucket with passed bucket_name."""
+        return self.s3.Bucket(bucket_name)
 
     def get_region_name(self, bucket):
         """Get the bucket's region name."""
@@ -132,7 +137,7 @@ class BucketManager:
             return '"{}"'.format(hashes[0].hexdigest())
         else:
             hash = self.hash_data(reduce(lambda x, y: x +y, (h.digest() for h in hashes)))
-            return '"{}-{}"'.format(hash.hexdigest(),len(hashes))
+            return '"{}-{}"'.format(hash.hexdigest(), len(hashes))
 
     def upload_file(self, bucket, path, key):
         """Upload path to s3_bucket at key."""
