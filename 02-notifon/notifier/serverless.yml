@@ -20,7 +20,7 @@ service: notifon-notifier # NOTE: update this with your service name
 provider:
   name: aws
   runtime: python3.7
-  profile: ${file(../config.${self:provider.stage}.json):notifier.profile}
+  profile: ${file(../config.${self:provider.stage}.json):videolyzer.profile}
   region: eu-west-1
   environment:
     SLACK_WEBHOOK_URL: ${file(../config.${self:provider.stage}.json):notifier.slack_webhook_url}
