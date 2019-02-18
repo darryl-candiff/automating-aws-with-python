@@ -24,27 +24,19 @@ provider:
       Action:
         - iam:GetRole
         - iam:PassRole
-      Resource: arn:aws:iam::860030955615:role/RekognitionSNSPublishRole
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:PutItem"
       Resource:
         Fn::GetAtt:
-          - VideosTable
+          - RekognitionSNSPublishRole
           - Arn
 
   environment:
-    DYNAMODB_TABLE_NAME: ${self:custom.videosTableName}
     REKOGNITION_SNS_TOPIC_ARN: ${self:custom.rekognitionSNSTopicArn}
-#    REKOGNITION_SNS_TOPIC_ARN: arn:aws:sns:eu-west-1:860030955615:rekognition-topic
-    REKOGNITION_ROLE_ARN: arn:aws:iam::860030955615:role/RekognitionSNSPublishRole
-#      Fn::GetAtt:
-#        - RekognitionSNSPublishRole
-#        - Arn
+    REKOGNITION_ROLE_ARN:
+      Fn::GetAtt:
+        - RekognitionSNSPublishRole
+        - Arn
 
 custom:
-  videosTableName: ${file(../config.${self:provider.stage}.json):videolyzer.videos_table}
-
   rekognitionSNSTopicArn:
     Fn::Join:
       - ':'
@@ -81,18 +73,24 @@ functions:
 
 resources:
   Resources:
-    VideosTable:
-      Type: AWS::DynamoDB::Table
+    RekognitionSNSPublishRole:
+      Type: AWS::IAM::Role
       Properties:
-        AttributeDefinitions:
-          -
-            AttributeName: videoName
-            AttributeType: S
-        KeySchema:
-          -
-            AttributeName: videoName
-            KeyType: HASH
-        ProvisionedThroughput:
-          ReadCapacityUnits: 1
-          WriteCapacityUnits: 1
-        TableName: ${self:custom.videosTableName}
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - rekognition.amazonaws.com
+              Action:
+                - sts.AssumeRole
+        Policies:
+          - PolicyName: RekognitionSNSPublishPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - sns:Publish
+                  Resource: ${self:custom.rekognitionSNSTopicArn}
